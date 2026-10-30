@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.idea/
+.vscode/
+
+# backend
+backend/node_modules/
+backend/dist/
+backend/coverage/
+
+# mobile
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/pubspec.lock
