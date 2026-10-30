@@ -12,7 +12,13 @@ import { Isletme } from '../modules/isletme/isletme.entity';
 import { Ilan } from '../modules/ilan/ilan.entity';
 
 // Geliştirme verisi: Bağcılar civarı 3 işletme + filtre testleri için uzak/süresi
-// geçmiş/stoksuz ilanlar. Tüm tabloları boşaltır, production'da çalışmaz.
+// geçmiş/stoksuz ilanlar + yarış testi için 10 onaylı alıcı.
+// Tüm tabloları boşaltır, production'da çalışmaz.
+
+// Sabit kimlikler: `x-kullanici-id` başlığıyla elle deneme ve scripts/yaris-testi.mjs için
+export const SAHIP_ID = '00000000-0000-4000-8000-000000000001';
+export const aliciId = (n: number) =>
+  `00000000-0000-4000-8000-0000000001${String(n).padStart(2, '0')}`;
 async function seed() {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Seed production ortamında çalıştırılamaz');
@@ -27,12 +33,24 @@ async function seed() {
     'TRUNCATE degerlendirme, rezervasyon, ilan, isletme, kullanici CASCADE',
   );
 
-  const sahip = await ds.getRepository(Kullanici).save({
+  const kullaniciRepo = ds.getRepository(Kullanici);
+  const sahip = await kullaniciRepo.save({
+    id: SAHIP_ID,
     ad_soyad: 'Örnek İşletme Sahibi',
     telefon: '+905550000000',
     rol: KullaniciRol.ISLETME,
     dogrulama_durumu: DogrulamaDurumu.ONAYLI,
   });
+
+  await kullaniciRepo.save(
+    Array.from({ length: 10 }, (_, i) => ({
+      id: aliciId(i + 1),
+      ad_soyad: `Alıcı ${i + 1}`,
+      telefon: `+90555000${String(i + 1).padStart(4, '0')}`,
+      rol: KullaniciRol.ALICI,
+      dogrulama_durumu: DogrulamaDurumu.ONAYLI,
+    })),
+  );
 
   const nokta = (enlem: number, boylam: number) => ({
     type: 'Point' as const,
@@ -76,6 +94,7 @@ async function seed() {
     ilan(firin, 'Simit', IlanKategori.UNLU_MAMUL, 10, 2),
     ilan(pastane, 'Poğaça', IlanKategori.UNLU_MAMUL, 8, 2),
     ilan(market, 'Yoğurt', IlanKategori.SUT_URUNU, 5, 1, 2),
+    ilan(firin, 'Son Ekmekler (yarış testi)', IlanKategori.UNLU_MAMUL, 3, 1),
     // Aşağıdakiler Bağcılar sorgusunda GÖRÜNMEMELİ
     ilan(uzak, 'Ekmek (uzak)', IlanKategori.UNLU_MAMUL, 20, 3),
     ilan(onaysiz, 'Ekmek (onaysız işletme)', IlanKategori.UNLU_MAMUL, 5, 1),
@@ -83,7 +102,9 @@ async function seed() {
     { ...ilan(pastane, 'Kurabiye (tükendi)', IlanKategori.KURU_PASTA, 6, 2), kalan_adet: 0 },
   ]);
 
-  console.log('Seed tamamlandı: 5 işletme, 8 ilan');
+  console.log('Seed tamamlandı: 5 işletme, 9 ilan, 10 alıcı');
+  console.log(`İşletme sahibi: ${SAHIP_ID}`);
+  console.log(`Alıcılar:       ${aliciId(1)} … ${aliciId(10)}`);
   await app.close();
 }
 

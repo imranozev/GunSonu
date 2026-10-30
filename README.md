@@ -58,6 +58,15 @@ GET /api/ilanlar/yakin?enlem=41.0390&boylam=28.8567&yaricap=3000
 ```
 `yaricap` metre cinsinden (100–10000, varsayılan 3000). Yalnızca onaylı işletmelerin, stoğu olan, teslim süresi ve son tüketim tarihi geçmemiş ilanları mesafeye göre sıralı döner (en fazla 50). Sorgu `ST_DWithin` ile `isletme.konum` GiST indeksini kullanır.
 
+**Rezervasyon** (kimlik doğrulama gelene kadar kullanıcı `x-kullanici-id` başlığıyla verilir; seed çıktısındaki kimlikler kullanılabilir)
+```
+POST   /api/rezervasyonlar          { "ilan_id": "...", "adet": 2 }   → QR kodu, son_gecerlilik
+DELETE /api/rezervasyonlar/:id                                       → kullanıcı iptali, stok iade
+POST   /api/rezervasyonlar/teslim   { "qr_kodu": "..." }              → işletme okutur
+```
+- **Yarış durumu:** stok tek bir koşullu `UPDATE ... WHERE kalan_adet >= :adet RETURNING` ile düşürülür ([rezervasyon.service.ts](backend/src/modules/rezervasyon/rezervasyon.service.ts)). Gösterim: `node scripts/yaris-testi.mjs`, 10 alıcı stoğu 3 olan ilana aynı anda istek atar; 3'ü alır, stok 0'da kalır.
+- **60 dk süre:** rezervasyon Redis'e TTL ile yazılır; anahtar silinince gelen `expired` olayı rezervasyonu `suresi_doldu` yapar, stoğu iade eder, kullanıcıya ihlal yazar (3 ihlal → 7 gün askı). Redis olayı kaçarsa dakikada bir çalışan veritabanı taraması aynı işi yapar ([rezervasyon-suresi.service.ts](backend/src/modules/rezervasyon/rezervasyon-suresi.service.ts)). Demo için `.env` içinde `REZERVASYON_SURESI_SN=30`.
+
 ### Mobil
 ```bash
 cd mobile
@@ -79,7 +88,8 @@ Debug modda sunucuya ulaşılamazsa örnek veri gösterilir.
 
 ## Sonraki adımlar
 - [x] Backend: yakın ilan sorgusu (`ST_DWithin`)
-- [ ] Backend: ilan oluşturma, rezervasyon, atomik stok düşürme, Redis TTL ile rezervasyon süresi
+- [x] Backend: rezervasyon, atomik stok düşürme, Redis TTL ile süre dolumu
+- [ ] Backend: ilan oluşturma, Redis TTL ile rezervasyon süresi
 - [ ] Backend: kural motoru (geçmiş tarih ve kategori kontrolü), JWT + SMS doğrulama
 - [x] Mobil: gerçek konum (geolocator), harita ↔ API bağlantısı, "bu bölgede ara"
 - [ ] Mobil: rezervasyon isteği, QR ekranı, işletme ilan ekranı

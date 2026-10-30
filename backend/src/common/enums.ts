@@ -30,5 +30,6 @@ export enum IlanKategori {
 export enum RezervasyonDurumu {
   BEKLIYOR = 'bekliyor',
   TESLIM = 'teslim',
-  IPTAL = 'iptal',
+  IPTAL = 'iptal', // kullanıcı vazgeçti
+  SURESI_DOLDU = 'suresi_doldu', // 60 dk içinde gelinmedi → ihlal sayılır
 }

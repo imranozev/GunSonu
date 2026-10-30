@@ -6,6 +6,7 @@ import { IsletmeModule } from './modules/isletme/isletme.module';
 import { IlanModule } from './modules/ilan/ilan.module';
 import { RezervasyonModule } from './modules/rezervasyon/rezervasyon.module';
 import { DegerlendirmeModule } from './modules/degerlendirme/degerlendirme.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DegerlendirmeModule } from './modules/degerlendirme/degerlendirme.modul
         synchronize: config.get('DB_SYNC') === 'true',
       }),
     }),
+    RedisModule,
     KullaniciModule,
     IsletmeModule,
     IlanModule,
