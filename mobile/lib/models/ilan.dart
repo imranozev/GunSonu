@@ -44,8 +44,9 @@ class Ilan {
       kalanAdet: json['kalan_adet'] as int,
       kisiBasiLimit: json['kisi_basi_limit'] as int,
       sonTuketimTarihi: DateTime.parse(json['son_tuketim_tarihi'] as String),
-      teslimBaslangic: DateTime.parse(json['teslim_baslangic'] as String),
-      teslimBitis: DateTime.parse(json['teslim_bitis'] as String),
+      teslimBaslangic: DateTime.parse(json['teslim_baslangic'] as String).toLocal(),
+      // API zamanları UTC (…Z) döner; saat metinleri yerel saatte gösterilmeli
+      teslimBitis: DateTime.parse(json['teslim_bitis'] as String).toLocal(),
     );
   }
 

@@ -2,10 +2,10 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/ilan.dart';
 
-// Backend hazır olana kadar ekranları besleyen örnek veri (Bağcılar civarı).
-// TODO: GET /api/ilanlar/yakin?enlem=..&boylam=.. ile değiştirilecek.
+// Konum alınamazsa kullanılan varsayılan nokta (Bağcılar).
 const varsayilanKonum = LatLng(41.0390, 28.8567);
 
+// Örnek veri: yalnızca debug modda, sunucuya ulaşılamadığında gösterilir.
 List<Ilan> ornekIlanlar() {
   final bugun = DateTime.now();
   DateTime saat(int s, int d) => DateTime(bugun.year, bugun.month, bugun.day, s, d);
